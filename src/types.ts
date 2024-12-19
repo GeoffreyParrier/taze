@@ -39,6 +39,7 @@ export type DiffType = 'major' | 'minor' | 'patch' | 'error' | null
 export interface PackageData {
   tags: Record<string, string>
   versions: string[]
+  nodeSemver?: string
   time?: Record<string, string>
   // raw?: Packument
   error?: Error | string
@@ -53,6 +54,7 @@ export interface ResolvedDepChange extends RawDep {
   pkgData: PackageData
   resolveError?: Error | string | null
   aliasName?: string
+  nodeCompatibleVersion?: { semver: string, compatible: boolean }
 }
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent'

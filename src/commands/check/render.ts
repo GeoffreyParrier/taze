@@ -7,7 +7,15 @@ import type {
 } from '../../types'
 import c from 'picocolors'
 import semver from 'semver'
-import { colorizeVersionDiff, FIG_CHECK, FIG_NO_POINTER, FIG_POINTER, FIG_UNCHECK, formatTable } from '../../render'
+import {
+  colorizeNodeCompatibility,
+  colorizeVersionDiff,
+  FIG_CHECK,
+  FIG_NO_POINTER,
+  FIG_POINTER,
+  FIG_UNCHECK,
+  formatTable,
+} from '../../render'
 import { DependenciesTypeShortMap } from '../../types'
 import { DiffColorMap } from '../../utils/diff'
 import { sortDepChanges } from '../../utils/sort'
@@ -46,6 +54,9 @@ export function renderChange(
     (change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
       ? c.dim(c.magenta(`(${change.latestVersionAvailable} available)`))
       : '',
+    change.nodeCompatibleVersion
+      ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
+      : c.yellow(`NA`),
   ]
 }
 
@@ -100,7 +111,7 @@ export function renderChanges(
 
     const table = formatTable(
       changes.map(c => renderChange(c, interactive, group)),
-      'LLRRRRRL',
+      'LLRRRRRLR',
     )
 
     const changeToTable = new Map(changes.map((change, idx) => [change, table[idx]]))
