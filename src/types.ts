@@ -54,7 +54,7 @@ export interface ResolvedDepChange extends RawDep {
   pkgData: PackageData
   resolveError?: Error | string | null
   aliasName?: string
-  nodeCompatibleVersion?: { semver: string, compatible: boolean }
+  nodeCompatibleVersionRange?: { semver: string, compatible: boolean }
 }
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent'
@@ -126,7 +126,7 @@ export interface CheckOptions extends CommonOptions {
 }
 
 export interface ColumnsToShow extends Record<string, boolean> {
-  nodeCompatibleVersion: boolean
+  nodeCompatibleVersionRange: boolean
 }
 
 export type ColumnsToShowHandler = Record<keyof ColumnsToShow, () => string | null>

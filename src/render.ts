@@ -78,9 +78,10 @@ export function formatTable(lines: string[][], align: string, spaces = '  ', hea
   })
 
   return allLines.map((line, i) => {
-    const alignTo = i > lines.length ? align : headerAlignment
+    const alignTo = i > lines.length ? headerAlignment : align
     return line.map((chars, j) => {
       const pad = alignTo[j] === 'R' ? visualPadStart : visualPadEnd
+      console.log(alignTo, pad, chars)
       return pad(chars, maxLen[j])
     }).join(spaces)
   })

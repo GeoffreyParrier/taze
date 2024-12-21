@@ -267,7 +267,7 @@ export async function resolveDependency(
     if (versionsEngines
       && target
       && target in versionsEngines) {
-      dep.nodeCompatibleVersion = {
+      dep.nodeCompatibleVersionRange = {
         compatible: semver.satisfies(currentNodeVersion, versionsEngines[target].node),
         semver: versionsEngines[target].node,
       }

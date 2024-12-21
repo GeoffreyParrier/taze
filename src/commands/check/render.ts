@@ -20,7 +20,7 @@ import { timeDifference } from '../../utils/time'
 export function renderChange(
   change: ResolvedDepChange,
   columnsToShow: ColumnsToShow = {
-    nodeCompatibleVersion: false,
+    nodeCompatibleVersionRange: false,
   },
   interactive?: InteractiveContext,
   grouped = false,
@@ -38,9 +38,9 @@ export function renderChange(
     name = c.dim(`${change.aliasName} ← `) + change.name
 
   const handler: ColumnsToShowHandler = {
-    nodeCompatibleVersion: () => {
-      return change.nodeCompatibleVersion
-        ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
+    nodeCompatibleVersionRange: () => {
+      return change.nodeCompatibleVersionRange
+        ? colorizeNodeCompatibility(change.nodeCompatibleVersionRange)
         : c.yellow('N/A')
     },
   }
@@ -115,14 +115,14 @@ export function renderChanges(
     )
 
     const columnsToShow: ColumnsToShow = {
-      nodeCompatibleVersion: changes.some(change => change.nodeCompatibleVersion),
+      nodeCompatibleVersionRange: changes.some(change => change.nodeCompatibleVersionRange),
     }
 
     let tableHeader: string[][] = []
     // If there is any additional headers we need to handle them in columns sizes too
     if (Object.values(columnsToShow).some(Boolean)) {
       const handler: ColumnsToShowHandler = {
-        nodeCompatibleVersion: () => `  ${c.blue('Node compatibility')}`,
+        nodeCompatibleVersionRange: () => `  ${c.blue('Node compatibility')}`,
       }
       const additionalHeaders = handleAddedColumns(columnsToShow, handler)
 
@@ -134,7 +134,7 @@ export function renderChanges(
     }
     const table = formatTable(
       changes.map(c => renderChange(c, columnsToShow, interactive, group)),
-      'LLRRRRRLR',
+      'LLRRRRRLL',
       undefined,
       tableHeader,
     )
@@ -157,7 +157,6 @@ export function renderChanges(
         if (lines.at(-1) !== '')
           lines.push('')
 
-        // We only take the headers we want
         const tableHeaderFormatted = table.slice(changes.length)
         const dependencyTypeLine = tableHeaderFormatted.find(line => line.includes(key)) || `  ${c.blue(key)}`
         lines.push(dependencyTypeLine)
