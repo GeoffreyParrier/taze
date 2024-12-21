@@ -1,10 +1,13 @@
 import type {
   CheckOptions,
+  ColumnsToShow,
+  ColumnsToShowHandler,
   DiffType,
   InteractiveContext,
   PackageMeta,
   ResolvedDepChange,
 } from '../../types'
+import { isString } from '@antfu/utils'
 import c from 'picocolors'
 import semver from 'semver'
 import {
@@ -18,12 +21,15 @@ import {
 } from '../../render'
 import { DependenciesTypeShortMap } from '../../types'
 import { DiffColorMap } from '../../utils/diff'
-import { sortDepChanges } from '../../utils/sort'
 
+import { sortDepChanges } from '../../utils/sort'
 import { timeDifference } from '../../utils/time'
 
 export function renderChange(
   change: ResolvedDepChange,
+  columnsToShow: ColumnsToShow = {
+    nodeCompatibleVersion: false,
+  },
   interactive?: InteractiveContext,
   grouped = false,
 ) {
@@ -38,6 +44,15 @@ export function renderChange(
   let name = change.name
   if (change.aliasName)
     name = c.dim(`${change.aliasName} ← `) + change.name
+
+  const handler: ColumnsToShowHandler = {
+    nodeCompatibleVersion: () => {
+      return change.nodeCompatibleVersion
+        ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
+        : c.yellow('N/A')
+    },
+  }
+  const addedColumns = handleAddedColumns(columnsToShow, handler)
 
   return [
     `${pre} ${update ? name : c.gray(name)}`,
@@ -54,9 +69,7 @@ export function renderChange(
     (change.latestVersionAvailable && semver.minVersion(change.targetVersion)!.toString() !== change.latestVersionAvailable)
       ? c.dim(c.magenta(`(${change.latestVersionAvailable} available)`))
       : '',
-    change.nodeCompatibleVersion
-      ? colorizeNodeCompatibility(change.nodeCompatibleVersion)
-      : c.yellow(`NA`),
+    ...addedColumns,
   ]
 }
 
@@ -109,8 +122,29 @@ export function renderChanges(
       '',
     )
 
+    const columnsToShow: ColumnsToShow = {
+      nodeCompatibleVersion: changes.some(change => change.nodeCompatibleVersion),
+    }
+
+    let tableHeader: string[][] = []
+    // If there is any additional headers we need to handle them in columns sizes too
+    if (Object.values(columnsToShow).some(Boolean)) {
+      const handler: ColumnsToShowHandler = {
+        nodeCompatibleVersion: () => `  ${c.blue('Node compatibility')}`,
+      }
+      const additionalHeaders = handleAddedColumns(columnsToShow, handler)
+
+      tableHeader = Object.keys(DependenciesTypeShortMap).map((key) => {
+        const baseHeaders = [`  ${c.blue(key)}`, ...Array.from<string>({ length: 7 }).fill('')]
+
+        return [...baseHeaders, ...additionalHeaders]
+      })
+    }
     const table = formatTable(
-      changes.map(c => renderChange(c, interactive, group)),
+      [
+        ...changes.map(c => renderChange(c, columnsToShow, interactive, group)),
+        ...tableHeader,
+      ],
       'LLRRRRRLR',
     )
 
@@ -131,7 +165,12 @@ export function renderChanges(
           continue
         if (lines.at(-1) !== '')
           lines.push('')
-        lines.push(`  ${c.blue(key)}`)
+
+        // We only take the headers we want
+        const tableHeaderFormatted = table.slice(changes.length)
+        const dependencyTypeLine = tableHeaderFormatted.find(line => line.includes(key)) || `  ${c.blue(key)}`
+        lines.push(dependencyTypeLine)
+
         lines.push(...group.map(change => `  ${changeToTable.get(change)!}`))
       }
     }
@@ -199,4 +238,11 @@ export function renderPackages(resolvePkgs: PackageMeta[], options: CheckOptions
   })
 
   return { lines, errLines }
+}
+
+function handleAddedColumns(columnsToShow: ColumnsToShow, handler: ColumnsToShowHandler) {
+  return Object.entries(columnsToShow)
+    .filter(([_, showColumn]) => showColumn)
+    .map(([name]) => handler[name]() || null)
+    .filter(isString)
 }

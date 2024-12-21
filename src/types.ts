@@ -125,6 +125,12 @@ export interface CheckOptions extends CommonOptions {
   includeLocked?: boolean
 }
 
+export interface ColumnsToShow extends Record<string, boolean> {
+  nodeCompatibleVersion: boolean
+}
+
+export type ColumnsToShowHandler = Record<keyof ColumnsToShow, () => string | null>
+
 export interface PackageMeta {
   /**
    * Package name
