@@ -45,7 +45,6 @@ export async function CheckPackages(options: CheckOptions, callbacks: CheckEvent
 }
 
 async function CheckSingleProject(pkg: PackageMeta, options: CheckOptions, filter: DependencyFilter = () => true, callbacks: CheckEventCallbacks = {}) {
-
   await resolvePackage(pkg, options, filter, callbacks.onDependencyResolved)
 
   const { resolved } = pkg

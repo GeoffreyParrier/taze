@@ -141,11 +141,10 @@ export function renderChanges(
       })
     }
     const table = formatTable(
-      [
-        ...changes.map(c => renderChange(c, columnsToShow, interactive, group)),
-        ...tableHeader,
-      ],
+      changes.map(c => renderChange(c, columnsToShow, interactive, group)),
       'LLRRRRRLR',
+      undefined,
+      tableHeader,
     )
 
     const changeToTable = new Map(changes.map((change, idx) => [change, table[idx]]))

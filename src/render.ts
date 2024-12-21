@@ -66,9 +66,10 @@ export function visualPadEnd(str: string, pad: number, char = ' ') {
   return str.padEnd(pad - visualLength(str) + str.length, char)
 }
 
-export function formatTable(lines: string[][], align: string, spaces = '  ') {
+export function formatTable(lines: string[][], align: string, spaces = '  ', headers: string[][] = [], headerAlignment: string = '') {
   const maxLen: number[] = []
-  lines.forEach((line) => {
+  const allLines: string[][] = [...lines, ...headers]
+  allLines.forEach((line) => {
     line.forEach((char, i) => {
       const len = visualLength(char)
       if (!maxLen[i] || maxLen[i] < len)
@@ -76,10 +77,13 @@ export function formatTable(lines: string[][], align: string, spaces = '  ') {
     })
   })
 
-  return lines.map(line => line.map((chars, i) => {
-    const pad = align[i] === 'R' ? visualPadStart : visualPadEnd
-    return pad(chars, maxLen[i])
-  }).join(spaces))
+  return allLines.map((line, i) => {
+    const alignTo = i > lines.length ? align : headerAlignment
+    return line.map((chars, j) => {
+      const pad = alignTo[j] === 'R' ? visualPadStart : visualPadEnd
+      return pad(chars, maxLen[j])
+    }).join(spaces)
+  })
 }
 
 export function colorizeVersionDiff(from: string, to: string, hightlightRange = true) {

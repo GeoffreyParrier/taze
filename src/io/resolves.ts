@@ -264,13 +264,12 @@ export async function resolveDependency(
   try {
     const currentNodeVersion = process.version
     const { versionsEngines } = dep.pkgData
-
     if (versionsEngines
-      && dep.latestVersionAvailable
-      && dep.latestVersionAvailable in versionsEngines) {
+      && target
+      && target in versionsEngines) {
       dep.nodeCompatibleVersion = {
-        compatible: semver.satisfies(currentNodeVersion, versionsEngines[dep.latestVersionAvailable].node),
-        semver: versionsEngines[dep.latestVersionAvailable].node,
+        compatible: semver.satisfies(currentNodeVersion, versionsEngines[target].node),
+        semver: versionsEngines[target].node,
       }
     }
   }
