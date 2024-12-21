@@ -45,14 +45,17 @@ export async function fetchPackage(spec: string, npmConfigs: Record<string, unkn
       getVersions(spec, {
         force,
         fetch,
+        apiEndpoint: 'http://localhost:3000',
       }),
       new Promise<ReturnType<typeof getVersions>>(
         (_, reject) => setTimeout(() => reject(new Error(`Timeout requesting "${spec}"`)), TIMEOUT),
       ),
     ])
+
     return {
       tags: data.distTags,
       versions: data.versions,
+      versionsEngines: data.versionsEngines,
       time: data.time,
     }
   }

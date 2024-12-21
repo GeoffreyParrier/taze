@@ -39,7 +39,7 @@ export type DiffType = 'major' | 'minor' | 'patch' | 'error' | null
 export interface PackageData {
   tags: Record<string, string>
   versions: string[]
-  nodeSemver?: string
+  versionsEngines?: Record<string, Record<string, string>>
   time?: Record<string, string>
   // raw?: Packument
   error?: Error | string

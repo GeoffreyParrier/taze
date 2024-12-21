@@ -1,7 +1,18 @@
-import type { CheckOptions, DependencyFilter, DependencyResolvedCallback, DiffType, PackageData, PackageMeta, RangeMode, RawDep, ResolvedDepChange } from '../types'
+import type {
+  CheckOptions,
+  DependencyFilter,
+  DependencyResolvedCallback,
+  DiffType,
+  PackageData,
+  PackageMeta,
+  RangeMode,
+  RawDep,
+  ResolvedDepChange,
+} from '../types'
 import { existsSync, promises as fs, lstatSync } from 'node:fs'
 import os from 'node:os'
 import { resolve } from 'node:path'
+import process from 'node:process'
 import _debug from 'debug'
 import pLimit from 'p-limit'
 import semver from 'semver'
@@ -71,7 +82,6 @@ export async function getPackageData(name: string): Promise<PackageData> {
     debug.resolve(`resolving ${name}`)
     const npmConfig = await getNpmConfig()
     const data = await fetchPackage(name, npmConfig)
-
     if (data) {
       cache[name] = { data, cacheTime: now() }
 
@@ -87,6 +97,7 @@ export async function getPackageData(name: string): Promise<PackageData> {
   return {
     tags: {},
     versions: [],
+    versionsEngines: {},
     error: error?.statusCode?.toString() || error,
   }
 }
@@ -247,6 +258,21 @@ export async function resolveDependency(
     const targetVersion = semver.minVersion(target || dep.targetVersion)
     if (tags.latest && targetVersion && semver.gt(tags.latest, targetVersion))
       dep.latestVersionAvailable = tags.latest
+  }
+  catch {}
+
+  try {
+    const currentNodeVersion = process.version
+    const { versionsEngines } = dep.pkgData
+
+    if (versionsEngines
+      && dep.latestVersionAvailable
+      && dep.latestVersionAvailable in versionsEngines) {
+      dep.nodeCompatibleVersion = {
+        compatible: semver.satisfies(currentNodeVersion, versionsEngines[dep.latestVersionAvailable].node),
+        semver: versionsEngines[dep.latestVersionAvailable].node,
+      }
+    }
   }
   catch {}
 
