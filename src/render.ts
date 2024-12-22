@@ -207,6 +207,6 @@ export function colorizeNodeCompatibility(nodeVersionCompatibility?: { semver: s
     return c.dim(c.yellow('N/A'))
 
   return nodeVersionCompatibility.compatible
-    ? c.dim(c.green(nodeVersionCompatibility.semver))
-    : c.dim(c.red(nodeVersionCompatibility.semver))
+    ? c.green(nodeVersionCompatibility.semver)
+    : c.red(nodeVersionCompatibility.semver)
 }
